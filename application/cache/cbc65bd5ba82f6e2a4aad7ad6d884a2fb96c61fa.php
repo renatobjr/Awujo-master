@@ -1,0 +1,1 @@
+<?php echo e(var_dump($data)); ?>
