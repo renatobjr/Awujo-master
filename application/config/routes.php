@@ -51,6 +51,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 $route['default_controller'] = 'pages/views';
 $route['dashboard'] = 'pages/dashboard';
+$route['dashboard/projetos'] = 'pages/projetos';
+$route['dashboard/responsaveis'] = 'pages/responsaveis';
+$route['dashboard/beneficiarios'] = 'pages/beneficiarios';
 /* Forms URI pages
  * */
 $route['dashboard/cadastrar-usuario'] = 'pages/form_usuario';
@@ -67,6 +70,10 @@ $route['dashboard/inserir-beneficiario'] = 'beneficiario/inserir';
  * */
 $route['dashboard/atualizar-responsavel'] = 'responsavel/atualizar_responsavel';
 $route['dashboard/excluir-responsavel/(:num)'] = 'responsavel/excluir_responsavel/$1';
+$route['dashboard/atualizar-projeto'] = 'projeto/atualizar_projeto';
+$route['dashboard/excluir-projeto/(:num)'] = 'projeto/excluir_projeto/$1';
+$route['dashboard/atualizar-beneficiario'] = 'beneficiario/atualizar_beneficiario'; 
+$route['dashboard/excluir-beneficiario/(:num)'] = 'beneficiario/excluir_beneficiario/$1';
 /* Search URI
  * */
 $route['dashboard/buscar-responsavel/(:any)'] = 'responsavel/buscar_responsavel_por_nome/$1';
@@ -79,12 +86,17 @@ $route['logout'] = 'usuario/logout';
 /* BTN Call para edição URI Pages
  * */
 $route['dashboard/editar-responsavel/(:num)'] = 'responsavel/buscar_responsavel_por_id/$1';
+$route['dashboard/editar-projeto/(:num)'] = 'projeto/buscar_projeto_por_id/$1';
+$route['dashboard/editar-beneficiario/(:num)'] = 'beneficiario/buscar_beneficiario_por_id/$1';
 /* Print URI Page
  * */
 $route['dashboard/lista-alunos'] = 'beneficiario/lista_beneficiarios/';
-$route['dashboard/imprimir-responsavel/(:num)'] = 'responsavel/buscar_responsavel_por_id/$1';
-$route['dashboard/imprimir-lista/(:any)'] = 'responsavel/criar_lista_telefones/$1';
+$route['dashboard/imprimir-lista-beneficiarios'] = 'beneficiario/lista_beneficiarios/';
 $route['dashboard/imprimir-beneficiario/(:num)'] = 'beneficiario/buscar_beneficiario_por_id/$1';
+$route['dashboard/imprimir-alunos-projeto/(:num)'] = 'projeto/imprimir_alunos_projeto/$1';
+$route['dashboard/imprimir-responsavel/(:num)'] = 'responsavel/buscar_responsavel_por_id/$1';
+$route['dashboard/imprimir-lista-responsaveis'] = 'responsavel/criar_lista_responsaveis/';
+$route['dashboard/imprimir-lista'] = 'responsavel/criar_lista_telefones/';
 /* Any URI Pages
  * */
 $route['(:any)'] = 'pages/views/$1';

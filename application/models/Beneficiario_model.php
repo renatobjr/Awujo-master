@@ -28,7 +28,7 @@ Class Beneficiario_model extends CI_Model {
             return FALSE;
         } else {
             $novo_beneficiario = new Beneficiario_model();
-            // Recebimento dos campos para a inserção noo banco de dados
+
             $novo_beneficiario->nome_beneficiario           = $this->input->post('nome-beneficiario');
             $novo_beneficiario->responsavel                 = $this->input->post('responsavel');
             $novo_beneficiario->raca                        = $this->input->post('raca');
@@ -43,15 +43,66 @@ Class Beneficiario_model extends CI_Model {
             $novo_beneficiario->turno                       = $this->input->post('turno');
             $novo_beneficiario->criado_em                   = date('Y-m-d H:i:s');
             $novo_beneficiario->responsavel_cadastro        = $this->encryption->decrypt($_SESSION['id-usuario']);
-            // Processo de inserção no banco de dados
+            
             $novo_beneficiario->db->set($novo_beneficiario)->insert($novo_beneficiario->beneficiario_db);
             return $novo_beneficiario->db->insert_id();
         }
     }
 
+    public function update($id)
+    {
+        $update_reg = array(
+            'nome_beneficiario' => $this->input->post('nome-beneficiario'),
+            'responsavel' => $this->input->post('responsavel'),
+            'raca' => $this->input->post('raca'),
+            'data_nascimento' => date('Y-m-d',strtotime(str_replace('-','/',$this->input->post('data-nascimento')))),
+            'idade_beneficiario' => $this->input->post('idade-beneficiario'),
+            'cpf_beneficiario' => $this->sanitazy_doc_dots($this->input->post('cpf-beneficiario')),
+            'nis_beneficiario' => $this->sanitazy_doc_dots($this->input->post('nis-beneficiario')),
+            'identidade_beneficiario' => $this->input->post('identidade-beneficiario'),
+            'escola_beneficiario' => $this->input->post('escola-beneficiario'),
+            'escolaridade_beneficiario' => $this->input->post('escolaridade'),
+            'projeto' => $this->input->post('projeto'),
+            'turno' => $this->input->post('turno'),
+        );
+
+        $this->db->where('idbeneficiario', $id);
+        $this->db->set($update_reg)->update($this->beneficiario_db);
+    }
+
+    public function delete($id)
+    {
+        $this->db->where('idbeneficiario', $id);
+        $this->db->delete($this->beneficiario_db);
+    }
+
+    public function delete_by_responsavel($id)
+    {
+        $this->db->where('responsavel', $id);
+        $this->db->delete($this->beneficiario_db);
+    }
+
+    public function get_beneficiarios()
+    {
+        $sql = 'select idbeneficiario, nome_beneficiario, nome_responsavel, b.raca, data_nascimento, idade_beneficiario,
+        cpf_beneficiario, nis_beneficiario, identidade_beneficiario, escolaridade_beneficiario, nome_projeto,  
+        turno, b.criado_em, nome_completo, atividades from beneficiarios b, usuario u, responsavel r, projetos p where b.responsavel = r.idresponsavel and 
+        b.projeto = p.idprojeto and b.responsavel_cadastro = u.idusuario';
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     public function get_beneficiario_by_id($id)
     {
-        // Selecionando os campos para a consulta
+        $this->db->from($this->beneficiario_db);
+        $this->db->where('idbeneficiario', $id);
+        $query = $this->db->get();
+        
+        return $query->row_array();
+    }
+
+    public function get_beneficiario_by_id_for_print($id)
+    {
         $sql = 'select idbeneficiario, nome_beneficiario, nome_responsavel, b.raca, data_nascimento, idade_beneficiario,
         cpf_beneficiario, nis_beneficiario, identidade_beneficiario, escolaridade_beneficiario, nome_projeto,  
         turno, b.criado_em, nome_completo, atividades from beneficiarios b, usuario u, responsavel r, projetos p where b.responsavel = r.idresponsavel and 
@@ -67,36 +118,22 @@ Class Beneficiario_model extends CI_Model {
         $query = $this->db->get();
         return $query->result_array();
     }
-    /**
-     * Sanitazy_doc_dots
-     *
-     * Função para retornar strings que possuem pontos e traços em documentos
-     *
-     * @package Responsavel_model
-     * @subpackage sanitazy_doc_dots
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @param string $doc Numero de documento para sanitizar
-     * @return string Numero de documento sanitizado
-     */
+
+    public function get_beneficiarios_by_projeto($idprojeto)
+    {
+        $sql = 'select idbeneficiario, nome_beneficiario, nome_responsavel, b.raca, data_nascimento, idade_beneficiario,
+        cpf_beneficiario, nis_beneficiario, identidade_beneficiario, escolaridade_beneficiario, nome_projeto,  
+        turno, b.criado_em, nome_completo, atividades from beneficiarios b, usuario u, responsavel r, projetos p where b.responsavel = r.idresponsavel and 
+        b.projeto = p.idprojeto and b.responsavel_cadastro = u.idusuario and b.projeto = ' . $idprojeto;
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
     public function sanitazy_doc_dots($doc)
     {
         return str_replace('-','', str_replace('.','',$doc));
     }
-    /**
-     * sanitazy_renda
-     *
-     * Função para retornar numeros em formato ideal para o Banco de dados
-     *
-     * @package Responsavel_model
-     * @subpackage sanitazy_renda
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @param integer $renda Valor em formato numerico para sanitização
-     * @return integer Valor em formato ideal para o banco de dados
-     */
+    
     public function sanitazy_renda($renda)
     {
         return str_replace(',','.',str_replace('.','',$renda));

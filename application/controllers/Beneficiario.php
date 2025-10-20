@@ -46,13 +46,52 @@ Class Beneficiario extends CI_Controller
         }
     }
 
+    public function excluir_beneficiario($id)
+    {
+        // Verificando acesso
+        if ($this->access_control()) {
+            $this->beneficiario_model->delete($id);
+            // Mensagem de sucesso ao excluir
+            $this->session->set_flashdata('success','<span>Beneficiário excluído com sucesso.</span>');
+            // Retorno do usuário para a dashboard
+            redirect('dashboard/beneficiarios');
+        }
+    }
+
     public function buscar_beneficiario_por_id($id)
     {
         // Verificando acesso
         if ($this->access_control()) {
-            $data['matricula'] = $this->beneficiario_model->get_beneficiario_by_id($id);
-            $this->blade->view('templates.matricula',$data);
+            if ($this->uri->segment(2) === 'imprimir-beneficiario') {
+                $data['beneficiario'] = $this->beneficiario_model->get_beneficiario_by_id_for_print($id);
+                // Preparando modelo para impressão
+                $this->blade->view('templates.ficha-matricula',$data);
+            } else {
+                $data['beneficiario'] = $this->beneficiario_model->get_beneficiario_by_id($id);
+                // Preparado página para edição de registro
+                $data['title'] = $data['beneficiario']['nome_beneficiario'];
+                $data['idbeneficiario'] = $this->encryption->encrypt($data['beneficiario']['idbeneficiario']);
+                $data['responsaveis'] = $this->responsavel_model->get_name_responsavel();
+                // Buscando registros
+                $data['projetos'] = $this->projeto_model->get_projetos();
+                $this->blade->view('dashboard.beneficiarios.form-beneficiarios',$data);
+            }
         }
+    }
+     
+    public function atualizar_beneficiario()
+    {
+        if ($this->access_control()) {
+            $id = $this->encryption->decrypt($this->input->post('idbeneficiario'));
+
+            $this->beneficiario_model->update($id);
+            $this->session->set_flashdata('success','<span>' . $this->input->post('nome-beneficiario') .
+                ' alterado com sucesso</span><a href="' . base_url('dashboard/imprimir-beneficiario/' .
+                    $this->encryption->decrypt($this->input->post('idbeneficiario'))) . '" target="_blank" class="btn-flat toast-action white-text">imprimir</a>');
+            // Retorno do usuário para a dashboard
+            redirect('dashboard/beneficiarios');
+        }
+            
     }
 
     public function lista_beneficiarios()
@@ -65,18 +104,6 @@ Class Beneficiario extends CI_Controller
         }
     }
 
-    /**
-     * access_control
-     *
-     * Função para validação o acesso
-     *
-     * @package Usuario
-     * @subpackage access_control
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @return void
-     */
     public function access_control()
     {
         if ($this->session->has_userdata('is_logged')) {

@@ -1,47 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-/**
- * Pages
- *
- * Controle de requisição de páginas estáticas
- *
- * @package CI
- * @subpackage Pages
- * @author Renato Bonfim Jr.
- * @copyright 2019-2029
- * @version 1.0
- */
+
 class Pages extends CI_Controller
 {
-    /**
-     * __construct
-     *
-     * Construtor inicial da classe.
-     *
-     * @package Pages
-     * @subpackage __construct()
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     */
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('beneficiario_model');
         $this->load->model('responsavel_model');
         $this->load->model('projeto_model');
     }
-    /**
-     * Views
-     *
-     * Função para retorno de uma página exibindo o erro 404 caso ela não exista no servidor.
-     *
-     * @package Pages
-     * @subpackage Views
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @param string $page nome do arquivo para busca
-     */
+    
     public function views($page = 'home')
     {
         // Verificando se uma página existe
@@ -53,17 +22,7 @@ class Pages extends CI_Controller
         // Redirecionando
         $this->blade->view($page,$data);
     }
-    /**
-     * Dashboard
-     *
-     * Função para retorno d Dashboad para acesso a usuário logados no sistema.
-     *
-     * @package Pages
-     * @subpackage dashboard
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     */
+    
     public function dashboard()
     {
         // Verificando acesso
@@ -72,6 +31,7 @@ class Pages extends CI_Controller
             $data['title'] = 'Dashboard';
             // Buscando registros
             $data['total_registros'] = $this->responsavel_model->get_all_data_responsavel();
+            // Verificando se existem registros
             if ( ! empty($data['total_registros'])) {
                 // Dados para o grafico racial
                 $data['pie_raca'] = $this->responsavel_model->get_pie_raca();
@@ -87,17 +47,42 @@ class Pages extends CI_Controller
             $this->blade->view('dashboard.index',$data);
         }
     }
-    /**
-     * Form Pages
-     *
-     * Função para retorno da pagina com o formulário para inserção/edição de responsáveis
-     *
-     * @package Pages
-     * @subpackage Form Responsável
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     */
+
+    public function projetos()
+    {
+        // Verificando acesso
+        if ($this->access_control() === TRUE) {
+            $data['title'] = 'Projetos';
+            $data['projetos'] = $this->projeto_model->get_projetos();
+            // Redirecionando
+            $this->blade->view('dashboard.projetos.index', $data);
+        }
+    }
+
+    public function form_projeto()
+    {
+        // Verificando acesso
+        if ($this->access_control()) {
+            $data['title'] = 'Cadastrar Projetos';
+            // Buscando registros
+            $data['total_registros'] = $this->responsavel_model->get_all_data_responsavel();
+            $data['method'] = $this->router->fetch_method();
+            // Redirecionando
+            $this->blade->view('dashboard.projetos.form-projetos',$data);
+        }
+    }
+
+    public function responsaveis()
+    {
+        // Verificando acesso
+        if ($this->access_control() === TRUE) {
+            $data['title'] = 'Responsáveis';
+            $data['responsaveis'] = $this->responsavel_model->get_responsaveis();
+            // Redirecionando
+            $this->blade->view('dashboard.responsaveis.index', $data);
+        }
+    }
+    
     public function form_responsavel()
     {
         // Verificando acesso
@@ -108,51 +93,30 @@ class Pages extends CI_Controller
             // Resolvendo o nome do método para render do formulário
             $data['method'] = $this->router->fetch_method();
             // Redirecionando
-            $this->blade->view('dashboard.responsavel',$data);
+            $this->blade->view('dashboard.responsaveis.form-responsavel',$data);
         }
     }
-    /**
-     * Form Usuario
-     *
-     * Função para retorno da pagina com o formulário para inserção/edição de usuários
-     *
-     * @package Pages
-     * @subpackage Form Usuario
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     */
+    
     public function form_usuario()
     {
         // Verificando acesso
         if ($this->access_control()) {
-            $data['title'] = 'Usuários';
+            $data['title'] = 'Cadastrar Usuários';
             // Buscando registros
             $data['total_registros'] = $this->responsavel_model->get_all_data_responsavel();
             // Redirecionando
             $this->blade->view('dashboard.usuario',$data);
         }
     }
-    /**
-     * Form Projetos
-     *
-     * Função para retorno da pagina com o formulário para inserção/edição de projetos
-     *
-     * @package Pages
-     * @subpackage Form Projetos
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     */
-    public function form_projeto()
+
+     public function beneficiarios()
     {
         // Verificando acesso
-        if ($this->access_control()) {
-            $data['title'] = 'Projetos';
-            // Buscando registros
-            $data['total_registros'] = $this->responsavel_model->get_all_data_responsavel();
+        if ($this->access_control() === TRUE) {
+            $data['title'] = 'Beneficiários';
+            $data['beneficiarios'] = $this->beneficiario_model->get_beneficiarios();
             // Redirecionando
-            $this->blade->view('dashboard.projetos',$data);
+            $this->blade->view('dashboard.beneficiarios.index', $data);
         }
     }
 
@@ -160,27 +124,17 @@ class Pages extends CI_Controller
     {
         // Verificando acesso
         if ($this->access_control()) {
-            $data['title'] = 'Beneficiários';
+            $data['title'] = 'Cadastrar Beneficiários';
             $data['responsaveis'] = $this->responsavel_model->get_name_responsavel();
             // Buscando registros
             $data['projetos'] = $this->projeto_model->get_projetos();
             $data['total_registros'] = $this->responsavel_model->get_all_data_responsavel();
+            $data['method'] = $this->router->fetch_method();
             // Redirecionando
-            $this->blade->view('dashboard.beneficiarios',$data);
+            $this->blade->view('dashboard.beneficiarios.form-beneficiarios',$data);
         }
     }
-    /**
-     * access_control
-     *
-     * Função para validação o acesso
-     *
-     * @package Pages
-     * @subpackage access_control
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @return void
-     */
+    
     public function access_control()
     {
         if ($this->session->has_userdata('is_logged')) {

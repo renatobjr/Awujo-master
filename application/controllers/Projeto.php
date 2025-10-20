@@ -7,6 +7,7 @@ Class Projeto extends CI_Controller
     {
         parent::__construct();
         $this->load->model('projeto_model');
+        $this->load->model('beneficiario_model');
     }
 
     public function inserir()
@@ -32,18 +33,47 @@ Class Projeto extends CI_Controller
             redirect('dashboard');
         }
     }
-    /**
-     * access_control
-     *
-     * Função para validação o acesso
-     *
-     * @package Usuario
-     * @subpackage access_control
-     * @author Renato Bonfim Jr.
-     * @copyright 2019-2029
-     * @version 1.0
-     * @return void
-     */
+
+    public function atualizar_projeto() 
+    {
+        if ($this->access_control()) {
+            $this->projeto_model->update(array('idprojeto' => $this->encryption->decrypt($this->input->post('idprojeto'))));
+            $this->session->set_flashdata('success','<span>' . $this->input->post('nome-projeto') .
+                ' alterado com sucesso</span><a href="');
+            // Retorno do usuário para a dashboard
+            redirect('dashboard/projetos');
+        }    
+    }
+
+    public function excluir_projeto($id) {
+        if ($this->access_control()) {
+            $this->projeto_model->delete($id);
+            $this->session->set_flashdata('success','<span>Projeto excluído com sucesso.</span>');
+            // Retorno do usuário para a dashboard
+            redirect('dashboard/projetos');
+        }
+    }
+    
+    public function buscar_projeto_por_id($id) {
+        if ($this->access_control()) {
+            $data = $this->projeto_model->get_projeto_by_id($id);
+            $data['title'] = 'Projetos';
+            $data['idprojeto'] = $this->encryption->encrypt($data['idprojeto']);
+            $this->blade->view('dashboard.projetos.form-projetos',$data);
+        }
+    }
+
+    public function imprimir_alunos_projeto($id) 
+    {
+        if ($this->access_control()) {
+            $data['title'] = 'Imprimir Lista de Alunos';
+            $data['projeto'] = $this->projeto_model->get_projeto_by_id($id);
+            $data['beneficiarios'] = $this->beneficiario_model->get_beneficiarios_by_projeto($id);
+            
+            $this->blade->view('templates.lista-alunos',$data);
+        }    
+    }
+
     public function access_control()
     {
         if ($this->session->has_userdata('is_logged')) {

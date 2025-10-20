@@ -11,7 +11,6 @@ Class Projeto_model extends CI_Model {
 
     public function insert()
     {
-        // Verificando a existência de cadastro
         $this->db->from($this->projeto_db);
         $this->db->where('nome_projeto',$this->input->post('nome-projeto'));
         $verify = $this->db->get();
@@ -30,13 +29,45 @@ Class Projeto_model extends CI_Model {
             return $novo_projeto->db->insert_id();
         }
     }
+    
+    public function update($idprojeto)
+    {
+        $update_reg = array(
+            'nome_projeto' => $this->input->post('nome-projeto'),
+            'patrocinador' => $this->input->post('patrocinador'),
+            'atividades' => $this->input->post('atividades'),
+            'responsavel_cadastro' => $this->encryption->decrypt($_SESSION['id-usuario'])
+        )
+        ;
+        $this->db->where($idprojeto);
+        $this->db->set($update_reg)->update($this->projeto_db);
+    }
+
+    public function delete($idprojeto)
+    {
+        $this->db->where('idprojeto', $idprojeto);
+        $this->db->set('status', 0)->update($this->projeto_db);
+
+
+    }
+
     public function get_projetos()
     {
-        // Definindo atributos
-        $this->db->select('idprojeto, nome_projeto, atividades');
-        $this->db->from($this->projeto_db);
+        $this->db->select('p.idprojeto, p.nome_projeto, p.patrocinador, COUNT(b.idbeneficiario) as total_beneficiarios');
+        $this->db->from('projetos p');
+        $this->db->join('beneficiarios b','b.projeto = p.idprojeto','left');
+        $this->db->where('p.status', 1);
+        $this->db->group_by('p.idprojeto');
         $query = $this->db->get();
-        // Resultado da Pesquisa
+        
         return $query->result_array();
+    }
+
+    public function get_projeto_by_id($idprojeto)
+    {
+        $this->db->where('idprojeto', $idprojeto);
+        $query = $this->db->get($this->projeto_db);
+        
+        return $query->row_array();
     }
 }
